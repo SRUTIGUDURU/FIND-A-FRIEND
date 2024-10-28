@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionnaire - Find A Friend</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="questionnaire.css">
+</head>
+<body>
+    <div class="container">
+        <div class="questionnaire-box">
+            <h1>Questionnaire</h1>
+            <form id="questionnaireForm">
+                <div class="form-group">
+                    <label for="name"><strong>What is your name?</strong></label>
+                    <input type="text" id="name" name="name" required />
+                </div>
+                <div class="form-group">
+                    <label for="gender"><strong>Your gender (if you want to meet people of all genders, choose doesn't matter):</strong></label>
+                    <select id="gender" name="gender" required>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Doesn't matter">Doesn't matter</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="year"><strong>Year:</strong></label>
+                    <select id="year" name="year" required>
+                        <option value="First year">First year</option>
+                        <option value="Second year">Second year</option>
+                        <option value="Third year">Third year</option>
+                        <option value="Doesn't matter">Doesn't matter</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="purpose"><strong>Purpose of finding a friend/acquaintance:</strong></label>
+                    <select id="purpose" name="purpose" required>
+                        <option value="To find long term friends">To find long term friends</option>
+                        <option value="Someone to attend ATMOS with">Someone to attend ATMOS with</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><strong>Hobbies:</strong></label>
+                    <div id="hobbies-container" class="checkbox-container"></div>
+                </div>
+                <div class="form-group">
+                    <label><strong>Topics of discussion among friends:</strong></label>
+                    <div id="topics-container" class="checkbox-container"></div>
+                </div>
+                <button type="submit" class="submit-btn">Submit</button>
+            </form>
+        </div>
+    </div>
+    <script src="questionnaire.js"></script>
+</body>
+</html>
