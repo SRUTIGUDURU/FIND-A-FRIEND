@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (await storeData(data)) {
             alert('Form data collected and stored successfully');
-            window.location.href = '/dashboard.html'; // Redirect to the dashboard
+            window.location.href = 'dashboard.html'; // Redirect to the dashboard
         }
     });
 });
