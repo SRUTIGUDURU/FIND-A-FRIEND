@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function storeData(data) {
         try {
-            const response = await fetch('https://okmzzeoaqkllbzpyynnl.supabase.co', {
+            const response = await fetch('https://okmzzeoaqkllbzpyynnl.supabase.co/rest/v1/questionnaire', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
