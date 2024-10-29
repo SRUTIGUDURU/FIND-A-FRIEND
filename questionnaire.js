@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM fully loaded and parsed');
 
+    // Hobby and Topic Lists
     const hobbiesList = [
         "coding", "reading", "watching stuff", "crocheting", "drawing/painting",
         "singing", "writing", "musical instruments", "tennis", "football", "basketball", "badminton",
@@ -12,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "history", "cricket", "Football (as a topic)", "current affairs"
     ];
 
+    // Hobby and Topic Container Elements
     const hobbiesContainer = document.getElementById('hobbies-container');
     const topicsContainer = document.getElementById('topics-container');
 
@@ -20,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    // Create Checkboxes for Hobbies and Topics
     function createCheckboxes(container, items, name) {
         items.forEach(item => {
             const div = document.createElement('div');
@@ -36,13 +39,17 @@ document.addEventListener('DOMContentLoaded', () => {
     createCheckboxes(hobbiesContainer, hobbiesList, 'hobbies');
     createCheckboxes(topicsContainer, topicsList, 'topics');
 
+    // Supabase endpoint for storing data
+    const SUPABASE_URL = 'https://okmzzeoaqkllbzpyynnl.supabase.co/rest/v1/questionnaire';
+    const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE5NzQsImV4cCI6MjA0NTcwNzk3NH0.hpmwUO2UozsTwm0g9cbCR4_Rgr_Go-vRHMPUfi582-g';  // Replace with your actual Supabase API Key
+
     async function storeData(data) {
         try {
-            const response = await fetch('https://okmzzeoaqkllbzpyynnl.supabase.co/rest/v1/questionnaire', {
+            const response = await fetch(SUPABASE_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE5NzQsImV4cCI6MjA0NTcwNzk3NH0.hpmwUO2UozsTwm0g9cbCR4_Rgr_Go-vRHMPUfi582-g'
+                    'Authorization': `Bearer ${eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE5NzQsImV4cCI6MjA0NTcwNzk3NH0.hpmwUO2UozsTwm0g9cbCR4_Rgr_Go-vRHMPUfi582-g}`
                 },
                 body: JSON.stringify(data)
             });
@@ -57,12 +64,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    // Handle Form Submission
     document.getElementById('questionnaireForm').addEventListener('submit', async function(e) {
         e.preventDefault();
+
         const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
 
-        // Handle multiple-value fields for hobbies and topics
+        // Handle multiple selection fields for hobbies and topics
         data.hobbies = formData.getAll('hobbies').join(', ');
         data.topics = formData.getAll('topics').join(', ');
 
@@ -70,9 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (await storeData(data)) {
             alert('Form data collected and stored successfully');
-            window.location.assign('dashboard.html');
+            window.location.assign('dashboard.html'); // Redirect after successful submission
         }
     });
 });
-
-
