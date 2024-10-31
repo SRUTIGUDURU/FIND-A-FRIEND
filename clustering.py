@@ -1,3 +1,4 @@
+
 import pandas as pd
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.cluster import AgglomerativeClustering
@@ -9,7 +10,7 @@ import json
 
 # Supabase credentials
 supabase_url = 'https://okmzzeoaqkllbzpyynnl.supabase.co'
-supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE5NzQsImV4cCI6MjA0NTcwNzk3NH0.hpmwUO2UozsTwm0g9cbCR4_Rgr_Go-vRHMPUfi582-g'  # Replace with your actual Supabase key
+supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE5NzQsImV4cCI6MjA0NTcwNzk3NH0.hpmwUO2UozsTwm0g9cbCR4_Rgr_Go-vRHMPUfi582-g'
 supabase: Client = create_client(supabase_url, supabase_key)
 
 # Fetch data from the 'questionnaire' table
@@ -98,10 +99,11 @@ def validate_group_similarity(groups, df):
             valid_groups[group_name] = members
     return valid_groups
 
-# Save valid groups to the 'groups' table in Supabase
+# Save valid groups to the 'groups' table in Supabase with comma-separated emails in 'email' column
 def save_groups_to_supabase(groups):
     for group_name, members in groups.items():
-        group_data = {'group_name': group_name, 'members': json.dumps(members)}
+        email_list = ', '.join(members)  # Combine emails into a comma-separated string
+        group_data = {'group_name': group_name, 'email': email_list}
         response = supabase.from_("groups").insert([group_data]).execute()
         if response.error:
             print("Error inserting group data:", response.error)
@@ -121,4 +123,4 @@ schedule.every().day.at("12:00").do(run_clustering)
 # Keep the script running to allow scheduled tasks
 while True:
     schedule.run_pending()
-    time.sleep(60)  # Wait for one minute between checks
+    time.sleep(60)
