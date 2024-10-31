@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     createCheckboxes(topicsContainer, topicsList, 'topics');
 
     const SUPABASE_URL = 'https://okmzzeoaqkllbzpyynnl.supabase.co/rest/v1/questionnaire';
-    const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE5NzQsImV4cCI6MjA0NTcwNzk3NH0.hpmwUO2UozsTwm0g9cbCR4_Rgr_Go-vRHMPUfi582-g';
+    const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMDEzMTk3NCwiZXhwIjoyMDQ1NzA3OTc0fQ.cHSUjQBxC4ULt5bVEtyRb7AsUPPpxlB_jET2mJJEGiU';
 
     async function deleteExistingSubmission(email) {
         try {
