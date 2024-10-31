@@ -1,4 +1,3 @@
-
 import pandas as pd
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.cluster import AgglomerativeClustering
@@ -10,7 +9,7 @@ import json
 
 # Supabase credentials
 supabase_url = 'https://okmzzeoaqkllbzpyynnl.supabase.co'
-supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE5NzQsImV4cCI6MjA0NTcwNzk3NH0.hpmwUO2UozsTwm0g9cbCR4_Rgr_Go-vRHMPUfi582-g'
+supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMDEzMTk3NCwiZXhwIjoyMDQ1NzA3OTc0fQ.cHSUjQBxC4ULt5bVEtyRb7AsUPPpxlB_jET2mJJEGiU'  # Make sure to keep your key secure
 supabase: Client = create_client(supabase_url, supabase_key)
 
 # Fetch data from the 'questionnaire' table
@@ -37,6 +36,9 @@ def process_and_cluster(df):
     for topic in unique_topics:
         df[topic] = df['topics'].apply(lambda x: 1 if topic in [t.strip() for t in x] else 0)
 
+    # Create a one-hot encoding for 'gender' and 'year'
+    df = pd.get_dummies(df, columns=['gender', 'year'], drop_first=True)
+
     df.drop(['hobbies', 'topics'], axis=1, inplace=True)  # Drop original columns
 
     # Calculate Euclidean distances and similarity scores
@@ -46,9 +48,9 @@ def process_and_cluster(df):
     df['topics_similarity'] = 1 / (1 + topics_distances.mean(axis=1))
     df['combined_similarity'] = (df['hobbies_similarity'] + df['topics_similarity']) / 2
 
-    # Cluster based on combined similarity scores
+    # Clustering based on combined similarity scores and segregated attributes
+    clustering_data = df.drop(columns=['email', 'purpose', 'hobbies_similarity', 'topics_similarity', 'combined_similarity'])
     num_groups = len(df) // 5
-    clustering_data = df[['combined_similarity']]
     agg_cluster = AgglomerativeClustering(n_clusters=num_groups, affinity='euclidean', linkage='ward')
     df['cluster'] = agg_cluster.fit_predict(clustering_data)
 
@@ -90,8 +92,8 @@ def validate_group_similarity(groups, df):
                 if member != other_member:
                     other_member_row = df[df['email'] == other_member].iloc[0]
                     similarity_score = 1 - euclidean_distances(
-                        member_row[unique_hobbies.union(unique_topics)].values.reshape(1, -1),
-                        other_member_row[unique_hobbies.union(unique_topics)].values.reshape(1, -1)
+                        member_row.drop(['email', 'purpose', 'cluster']).values.reshape(1, -1),
+                        other_member_row.drop(['email', 'purpose', 'cluster']).values.reshape(1, -1)
                     )[0][0]
                     similarities.append(similarity_score)
 
@@ -124,3 +126,4 @@ schedule.every().day.at("12:00").do(run_clustering)
 while True:
     schedule.run_pending()
     time.sleep(60)
+
