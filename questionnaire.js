@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
         "history", "cricket", "Football (as a topic)", "current affairs"
     ];
 
-    // Hobby and Topic Container Elements
     const hobbiesContainer = document.getElementById('hobbies-container');
     const topicsContainer = document.getElementById('topics-container');
 
@@ -22,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Create Checkboxes for Hobbies and Topics
     function createCheckboxes(container, items, name) {
         items.forEach(item => {
             const div = document.createElement('div');
@@ -39,9 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
     createCheckboxes(hobbiesContainer, hobbiesList, 'hobbies');
     createCheckboxes(topicsContainer, topicsList, 'topics');
 
-    // Supabase endpoint for storing data
     const SUPABASE_URL = 'https://okmzzeoaqkllbzpyynnl.supabase.co/rest/v1/questionnaire';
-    const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE5NzQsImV4cCI6MjA0NTcwNzk3NH0.hpmwUO2UozsTwm0g9cbCR4_Rgr_Go-vRHMPUfi582-g';  // Replace with your actual Supabase API Key
+    const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE5NzQsImV4cCI6MjA0NTcwNzk3NH0.hpmwUO2UozsTwm0g9cbCR4_Rgr_Go-vRHMPUfi582-g';
 
     async function storeData(data) {
         try {
@@ -49,12 +46,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE5NzQsImV4cCI6MjA0NTcwNzk3NH0.hpmwUO2UozsTwm0g9cbCR4_Rgr_Go-vRHMPUfi582-g}`
+                    'apikey': SUPABASE_API_KEY,
+                    'Authorization': `Bearer ${SUPABASE_API_KEY}`
                 },
                 body: JSON.stringify(data)
             });
 
-            if (!response.ok) throw new Error('Failed to store data');
+            if (!response.ok) throw new Error(`Failed to store data: ${response.statusText}`);
             console.log('Data successfully stored');
         } catch (error) {
             console.error('Error storing data:', error);
@@ -64,14 +62,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
-    // Handle Form Submission
     document.getElementById('questionnaireForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
         const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
 
-        // Handle multiple selection fields for hobbies and topics
+        // Retrieve email from localStorage and include it in data
+        const email = localStorage.getItem('userEmail');
+        if (email) data.email = email;
+
         data.hobbies = formData.getAll('hobbies').join(', ');
         data.topics = formData.getAll('topics').join(', ');
 
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (await storeData(data)) {
             alert('Form data collected and stored successfully');
-            window.location.assign('dashboard.html'); // Redirect after successful submission
+            window.location.assign('dashboard.html');
         }
     });
 });
