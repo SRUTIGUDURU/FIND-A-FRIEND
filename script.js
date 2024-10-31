@@ -60,3 +60,4 @@ document.addEventListener('DOMContentLoaded', function() {
         google.accounts.id.prompt();
     });
 });
+
