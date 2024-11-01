@@ -1,55 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Chat Groups</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
-  <style>
-    .group-button {
-      padding: 10px;
-      margin: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .back-button {
-      margin-top: 20px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Chat Groups</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) {
+                alert("Please log in first.");
+                window.location.href = 'login.html';
+            } else {
+                // Fetch and display groups
+                const groupContainer = document.getElementById("group-buttons");
+                fetch(`/get_groups?email=${userEmail}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.groups.forEach(group => {
+                            const button = document.createElement("button");
+                            button.innerText = group.group_name;
+                            button.onclick = () => {
+                                window.location.href = `chat/${group.group_name}?email=${userEmail}`;
+                            };
+                            groupContainer.appendChild(button);
+                        });
+                    });
+            }
+        });
+    </script>
 </head>
 <body>
-  <h2>Your Chat Groups</h2>
-  <div id="group-buttons"></div>
-
-  <script>
-    // Fetch groups from the server
-    async function fetchGroups() {
-      try {
-        const response = await fetch('/api/get_groups');
-        if (!response.ok) throw new Error('Failed to fetch groups');
-        
-        const groups = await response.json();
-        const groupContainer = document.getElementById('group-buttons');
-        groupContainer.innerHTML = ''; // Clear previous buttons
-
-        groups.forEach(group => {
-          const button = document.createElement('button');
-          button.innerText = group.group_name;
-          button.className = 'group-button';
-          button.onclick = () => {
-            window.location.href = `/chat.html?group=${encodeURIComponent(group.group_name)}`;
-          };
-          groupContainer.appendChild(button);
-        });
-      } catch (error) {
-        console.error('Error fetching groups:', error);
-      }
-    }
-
-    fetchGroups();  // Load groups on page load
-  </script>
-
-  <button class="back-button" onclick="location.href='dashboard.html'">Back to Dashboard</button>
+    <h1>Your Chat Groups</h1>
+    <div id="group-buttons"></div>
 </body>
 </html>
+
