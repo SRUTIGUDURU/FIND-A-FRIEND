@@ -6,72 +6,93 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap">
     <style>
         /* General Page Styling */
-        body, html {
-            font-family: 'Roboto', Arial, sans-serif;
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f0f0;
             margin: 0;
             padding: 0;
-            height: 100%;
-            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
+            min-height: 100vh;
         }
+
         .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
             width: 90%;
             max-width: 1000px;
             padding: 20px;
-            text-align: center;
+            min-height: 100vh;
+            margin-top: 20px;
         }
+
         .dashboard-box {
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            padding: 40px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 20px;
+            overflow-y: auto;
+            max-height: 90vh;
         }
+
         h1 {
+            text-align: center;
             color: #333;
             margin-bottom: 20px;
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
         }
+
         .dashboard-btn {
-            display: block;
-            background-color: #4285F4;
+            background-color: #4CAF50;
             color: white;
             padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, box-shadow 0.3s;
             border: none;
+            border-radius: 4px;
+            cursor: pointer;
             font-size: 16px;
+            width: 100%;
+            max-width: 200px;
             margin: 10px auto;
-            width: 200px;
+            display: block;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
         }
+
         .dashboard-btn:hover {
-            background-color: #357ae8;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+            background-color: #45a049;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
         }
+
         .button-container {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+
+        /* Responsive adjustments */
         @media (max-width: 768px) {
             .container {
                 width: 95%;
                 padding: 10px;
             }
+
             .dashboard-box {
                 padding: 20px;
             }
+
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
+
             .dashboard-btn {
                 width: 100%;
-                max-width: none;
             }
         }
     </style>
