@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ group_name }} Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Chat for {{ group_name }}</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="message-input" placeholder="Type your message">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const socket = io();
+        const groupName = "{{ group_name }}";
+        const email = localStorage.getItem('userEmail');
+
+        if (!email) {
+            alert("Please log in first.");
+            window.location.href = 'index.html';
+        }
+
+        // Join the group room
+        socket.emit('join', { group_name: groupName, email: email });
+
+        // Receive messages
+        socket.on('receive_message', function(data) {
+            const messageBox = document.getElementById('chat-box');
+            messageBox.innerHTML += `<p><strong>${data.user_name}</strong>: ${data.message}</p>`;
+        });
+
+        // Send a new message
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            socket.emit('new_message', { group_name: groupName, email: email, message: input.value });
+            input.value = '';
+        }
+    </script>
+</body>
+</html>
