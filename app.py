@@ -1,86 +1,84 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
-from flask_socketio import SocketIO, join_room, emit
-from supabase import create_client, Client
-import sqlite3
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
+from sqlalchemy import create_engine, Column, String, Text, DateTime, func
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
+from typing import List
+import uvicorn
+import json
+import os
 
-# Initialize Flask and SocketIO
-app = Flask(__name__)
-socketio = SocketIO(app)
+# Database connection (PostgreSQL on Neon/Railway)
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@host:port/dbname")
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
-# Supabase connection
-supabase_url = 'https://okmzzeoaqkllbzpyynnl.supabase.co'
-supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbXp6ZW9hcWtsbGJ6cHl5bm5sIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMDEzMTk3NCwiZXhwIjoyMDQ1NzA3OTc0fQ.cHSUjQBxC4ULt5bVEtyRb7AsUPPpxlB_jET2mJJEGiU'  
-supabase: Client = create_client(supabase_url, supabase_key)
+# Define Message model
+class Message(Base):
+    __tablename__ = "messages"
+    id = Column(String, primary_key=True, index=True)
+    group_name = Column(String, index=True)
+    email = Column(String, index=True)
+    message = Column(Text)
+    timestamp = Column(DateTime, server_default=func.now())
 
-# SQLite connection for chat storage
-conn = sqlite3.connect('db/chat_messages.db', check_same_thread=False)
-c = conn.cursor()
+# Create tables
+Base.metadata.create_all(bind=engine)
 
-# Ensure chat table exists
-c.execute('''CREATE TABLE IF NOT EXISTS messages (
-               group_name TEXT,
-               email TEXT,
-               message TEXT,
-               timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-           )''')
-conn.commit()
+# FastAPI app
+app = FastAPI()
 
-# Fetch groups for user from Supabase
-def get_user_groups(email):
-    response = supabase.from_("groups").select("*").like("email", f"%{email}%").execute()
-    if response.error:
-        print("Error fetching groups:", response.error)
-        return []
-    return response.data
+# Dependency for DB session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# Fetch name from questionnaire
-def get_name_by_email(email):
-    response = supabase.from_("questionnaire").select("name").eq("email", email).execute()
-    if response.error or not response.data:
-        return "Unknown User"
-    return response.data[0]['name']
+# Store message in DB
+@app.post("/send_message/")
+def send_message(group_name: str, email: str, message: str, db: Session = Depends(get_db)):
+    new_message = Message(group_name=group_name, email=email, message=message)
+    db.add(new_message)
+    db.commit()
+    return {"status": "Message sent!"}
 
-@app.route('/')
-def home():
-    email = request.args.get('email')  # Get email from request parameter
-    if not email:
-        return "Email not provided!", 400  # Error handling if email isn't provided
+# Get messages for a group
+@app.get("/messages/{group_name}", response_model=List[str])
+def get_messages(group_name: str, db: Session = Depends(get_db)):
+    messages = db.query(Message).filter(Message.group_name == group_name).all()
+    return [m.message for m in messages]
 
-    user_groups = get_user_groups(email)
-    return render_template('chatgroup.html', groups=user_groups, email=email)
+# WebSocket for real-time chat
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
 
-@app.route('/chat/<group_name>')
-def chat(group_name):
-    email = request.args.get('email')  # Pass email to chat page
-    if not email:
-        return redirect(url_for('home'))
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
 
-    return render_template('chat.html', group_name=group_name, email=email)
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
 
-# Socket.IO event for new message
-@socketio.on('new_message')
-def handle_new_message(data):
-    group_name = data['group_name']
-    email = data['email']
-    message = data['message']
-    
-    # Store the message in SQLite
-    c.execute("INSERT INTO messages (group_name, email, message) VALUES (?, ?, ?)",
-              (group_name, email, message))
-    conn.commit()
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
 
-    # Retrieve the user's name to display
-    user_name = get_name_by_email(email)
-    data['user_name'] = user_name
+manager = ConnectionManager()
 
-    # Broadcast the message to the group
-    emit('receive_message', data, room=group_name)
+@app.websocket("/ws/{group_name}")
+async def websocket_endpoint(websocket: WebSocket, group_name: str):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await manager.broadcast(f"{group_name}: {data}")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
-# Join the group room
-@socketio.on('join')
-def handle_join(data):
-    join_room(data['group_name'])
-    emit('status', {'msg': f"{data['email']} has entered the chat"}, room=data['group_name'])
+# Run server locally
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
-if __name__ == '__main__':
-    socketio.run(app)
